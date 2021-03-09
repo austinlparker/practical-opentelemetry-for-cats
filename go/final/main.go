@@ -5,20 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpgrpc"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/semconv"
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
@@ -32,52 +25,9 @@ type apiResponse struct {
 	Price         float32 `json:"price"`
 }
 
-func initOpenTelemetry() {
-	ctx := context.Background()
-	driver := otlpgrpc.NewDriver(
-		otlpgrpc.WithEndpoint("collector:4317"),
-		otlpgrpc.WithInsecure(),
-	)
-	exporter, err := otlp.NewExporter(ctx, driver)
-	if err != nil {
-		log.Fatalf("Failed to create collector exporter: %v", err)
-	}
-
-	defer func() {
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
-		defer cancel()
-		if err := exporter.Shutdown(ctx); err != nil {
-			otel.Handle(err)
-		}
-	}()
-
-	res, err := resource.New(ctx,
-		resource.WithAttributes(semconv.ServiceNameKey.String("go-server")),
-	)
-
-	provider := sdktrace.NewTracerProvider(
-		sdktrace.WithConfig(sdktrace.Config{DefaultSampler: sdktrace.AlwaysSample()}),
-		sdktrace.WithResource(res),
-		sdktrace.WithBatcher(
-			exporter,
-			sdktrace.WithBatchTimeout(5*time.Second),
-			sdktrace.WithMaxExportBatchSize(10),
-		),
-	)
-	defer func() {
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
-		defer cancel()
-		if err := provider.Shutdown(ctx); err != nil {
-			otel.Handle(err)
-		}
-	}()
-	otel.SetTracerProvider(provider)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	log.Println("opentelemetry configured!")
-}
-
 func main() {
-	initOpenTelemetry()
+	ctx := context.Background()
+	InitOpenTelemetry(ctx)
 	router := gin.New()
 	router.Use(otelgin.Middleware("go-server"))
 	router.GET("/", func(c *gin.Context) {

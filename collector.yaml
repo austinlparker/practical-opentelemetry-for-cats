@@ -2,14 +2,13 @@ receivers:
   otlp:
     protocols:
       grpc:
-      http:
 
 processors:
   batch:
 
 exporters:
   logging:
-    logLevel: info
+    logLevel: debug
 
 service:
   pipelines:

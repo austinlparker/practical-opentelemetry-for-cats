@@ -2,13 +2,15 @@ version: "2"
 services:
   collector:
     image: otel/opentelemetry-collector:latest
-    ports:
+    expose:
       - 4317
     command: ["--config=/etc/collector-config.yaml"]
     volumes:
       - ./collector.yaml:/etc/collector-config.yaml
   
   go:
-    build: ./go
+    build: ./go 
     ports:
       - 8080:8080
+    depends_on: 
+      - collector
