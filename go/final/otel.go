@@ -17,7 +17,7 @@ import (
 // InitOpenTelemetetry initializes OpenTelemetry
 func InitOpenTelemetry(ctx context.Context) {
 	driver := otlpgrpc.NewDriver(
-		otlpgrpc.WithEndpoint("collector:55680"),
+		otlpgrpc.WithEndpoint("collector:4317"),
 		otlpgrpc.WithInsecure(),
 	)
 	exporter, err := otlp.NewExporter(ctx, driver)

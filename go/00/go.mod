@@ -1,4 +1,4 @@
-module main
+module main00
 
 go 1.15
 
