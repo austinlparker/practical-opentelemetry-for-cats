@@ -1,16 +1,14 @@
-package main01
+package base
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"time"
-)
 
-var tracer = otel.Tracer("go-server")
+	"github.com/gin-gonic/gin"
+)
 
 type apiResponse struct {
 	Activity      string  `json:"activity"`
@@ -21,8 +19,8 @@ type apiResponse struct {
 }
 
 func main() {
-	InitOpenTelemetry()
 	router := gin.New()
+
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "hello world!")
 	})

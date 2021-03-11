@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -16,8 +17,12 @@ import (
 
 // InitOpenTelemetetry initializes OpenTelemetry
 func InitOpenTelemetry(ctx context.Context) {
+	endpoint := "localhost:4317"
+	if collector, ok := os.LookupEnv("COLLECTOR_ENDPOINT"); ok {
+		endpoint = collector
+	}
 	driver := otlpgrpc.NewDriver(
-		otlpgrpc.WithEndpoint("collector:4317"),
+		otlpgrpc.WithEndpoint(endpoint),
 		otlpgrpc.WithInsecure(),
 	)
 	exporter, err := otlp.NewExporter(ctx, driver)

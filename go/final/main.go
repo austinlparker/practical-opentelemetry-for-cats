@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptrace"
+	"runtime/trace"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -40,6 +44,7 @@ func main() {
 
 func handleForm(c *gin.Context) {
 	formType := c.PostForm("type")
+	oteltrace.SpanFromContext(c.Request.Context()).SetAttributes(attribute.Bool("emptyForm", (len(formType) > 0)))
 	activity, err := getActivityWithParams(c.Request.Context(), formType)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -48,11 +53,12 @@ func handleForm(c *gin.Context) {
 }
 
 func getActivityWithParams(ctx context.Context, t string) (apiResponse, error) {
-	_, span := tracer.Start(ctx, "getActivityWithParams", oteltrace.WithAttributes(attribute.String("activityType", t)))
+	ctx, span := tracer.Start(ctx, "getActivityWithParams", oteltrace.WithAttributes(attribute.String("activityType", t)))
 	defer span.End()
 	activityResponse := apiResponse{}
 	url := fmt.Sprintf("https://www.boredapi.com/api/activity?type=%s", t)
-	c := http.Client{}
+	c := http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
+	ctx = httptrace.WithClientTrace(ctx, otelhttptrace.NewClientTrace(ctx))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		span.AddEvent(err.Error())

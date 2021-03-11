@@ -14,5 +14,6 @@ services:
       - 8080:8080
     environment: 
       - GIN_MODE=release
+      - COLLECTOR_ENDPOINT=collector:4317
     depends_on: 
       - collector
