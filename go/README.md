@@ -4,7 +4,7 @@ OpenTelemetry is an Application Programming Interface (API) and Software Develop
 
 This guide assumes a familiarity with the Go programming language and common Linux command-line utilities (such as `curl`). In addition, it assumes you are familiar with the  concepts of OpenTelemetry (if you'd like a refresher, see [the introduction](/README.md#about-opentelemetry)). This guide uses code that can be found in the subfolders of this directory, at different stages, for you to follow along with.
 
-The application itself is an HTTP server that uses the Gin framework for routing and middleware. It exposes an endpoint at `/getActivity` that expects an `HTTP POST` request as part of a form submission. This endpoint returns JSON to the caller. You can find the base version of the application, with no instrumentation added, [here](00/main.go).
+The application itself is an HTTP server that uses the Gin framework for routing and middleware. It exposes an endpoint at `/getActivity` that expects an `HTTP POST` request as part of a form submission. This endpoint returns JSON to the caller. You can find the base version of the application, with no instrumentation added, [here](./base/main.go).
 
 ## Table of Contents
 
