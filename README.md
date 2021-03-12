@@ -1,4 +1,4 @@
-# Practical OpenTelemetry
+# Practical OpenTelemetry (for Cats)
 
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
@@ -44,3 +44,7 @@ This work is licensed under a
 [cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
 
 Please note that the work covered by this license is strictly limited to the example code and documentation in this repository, dependencies and other linked software may be covered by other licenses which are superseded by CC-BY-4.0.
+
+## Why 'for Cats'?
+
+Because someone took [Practical OpenTelemetry](https://words.boten.ca/Practical-OpenTelemetry-part-1-Python/) already. :)
