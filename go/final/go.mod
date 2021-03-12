@@ -9,7 +9,6 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.18.0
 	go.opentelemetry.io/otel v0.18.0
 	go.opentelemetry.io/otel/exporters/otlp v0.18.0
-	go.opentelemetry.io/otel/exporters/stdout v0.18.0
 	go.opentelemetry.io/otel/sdk v0.18.0
 	go.opentelemetry.io/otel/trace v0.18.0
 )
