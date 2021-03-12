@@ -1,4 +1,4 @@
-# OpenTelemetry for Go (The Hard-ish Way)
+# Practical OpenTelemetry for Go
 
 OpenTelemetry is an Application Programming Interface (API) and Software Development Kit (SDK) for the creation, modification, and export of telemetry data such as metrics, logs, and traces. OpenTelemetry for Go is the reference implementation of the API and SDK, for the Go programming language. This guide is intended to walk you through the fundamental steps of adding OpenTelemetry to an existing client-server application.
 
