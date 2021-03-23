@@ -8,7 +8,10 @@ import (
 	"net/http"
 	"net/http/httptrace"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/tpkeeper/gin-dump"
+
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -32,7 +35,9 @@ func main() {
 	ctx := context.Background()
 	InitOpenTelemetry(ctx)
 	router := gin.New()
+	router.Use(gindump.Dump())
 	router.Use(otelgin.Middleware("go-server"))
+	router.Use(cors.Default())
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "hello world!")
 	})

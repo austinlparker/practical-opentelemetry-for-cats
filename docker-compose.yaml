@@ -4,16 +4,30 @@ services:
     image: otel/opentelemetry-collector:latest
     expose:
       - 4317
+    ports:
+      - 55681:55681
     command: ["--config=/etc/collector-config.yaml"]
     volumes:
       - ./collector.yaml:/etc/collector-config.yaml
   
   go:
-    build: ./go 
+    build: ./go/final
     ports:
       - 8080:8080
     environment: 
       - GIN_MODE=release
       - COLLECTOR_ENDPOINT=collector:4317
     depends_on: 
+      - collector
+  
+  web:
+    build: ./web/base
+    ports:
+      - 3000:80
+    environment:
+      - IS_DOCKER=true
+      - SERVER_HOSTNAME=go
+      - SERVER_PORT=8080
+      - COLLECTOR_ENDPOINT=collector:4317
+    depends_on:
       - collector
