@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { BaseOpenTelemetryComponent } from '@opentelemetry/plugin-react-load'
 import { context, getSpan, setSpan } from '@opentelemetry/api';
 import Tracer from './tracer.js'
@@ -17,17 +17,12 @@ class Form extends BaseOpenTelemetryComponent {
     this.setResults = this.setResults.bind(this)
   }
 
-  async getActivity(event) {
+  getActivity(event) {
     event.preventDefault()
     const getActivitySpan = tracer.startSpan('fetchActivity')
-    context.with(setSpan(context.active(), getActivitySpan), async () => {
-      const res = await fetch(`http://localhost:8080/getActivity?type=${this.state.option}`, {
-        method: 'POST',
-        mode: 'cors',
-      });
-      const result = await res.text()
-      this.setResults(JSON.parse(result))
-      getActivitySpan.end()
+    context.with(setSpan(context.active(), getActivitySpan), () => {
+      const req = new Request(`http://localhost:8080/getActivity?type=${this.state.option}`, {method:'POST'})
+      fetch(req).then(res => res.text()).then(text => this.setResults(JSON.parse(text))).then(() => getActivitySpan.end())
     })
     
   }

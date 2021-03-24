@@ -11,6 +11,7 @@
     "@opentelemetry/propagator-b3": "^0.18.0",
     "@opentelemetry/tracing": "^0.18.0",
     "@opentelemetry/web": "^0.18.0",
+    "@opentelemetry/api": "^0.18.0",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",

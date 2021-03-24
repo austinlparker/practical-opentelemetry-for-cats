@@ -6,18 +6,15 @@ import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { B3Propagator } from '@opentelemetry/propagator-b3';
-import { DiagConsoleLogger, DiagLogLevel, diag } from '@opentelemetry/api';
+import { DiagConsoleLogger, DiagLogLevel, diag, propagation } from '@opentelemetry/api';
 
 export default (serviceName) => {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
   const provider = new WebTracerProvider();
-  registerInstrumentations({
-    instrumentations: [
-      new FetchInstrumentation(),
-    ],
-    tracerProvider: provider
+  provider.register({
+    contextManager: new ZoneContextManager(),
+    propagator: new B3Propagator()
   })
-
   const exporter = new CollectorTraceExporter({
     url: 'http://localhost:55681/v1/trace',
   });
@@ -28,5 +25,14 @@ export default (serviceName) => {
   const tracer = provider.getTracer(serviceName);
   BaseOpenTelemetryComponent.setTracer(tracer);
 
+  registerInstrumentations({
+    instrumentations: [
+      new FetchInstrumentation({
+        propagateTraceHeaderCorsUrls: 'http://localhost:8080/getActivity'
+      }),
+    ],
+    tracerProvider: provider
+  })
+  
   return tracer;
 }
