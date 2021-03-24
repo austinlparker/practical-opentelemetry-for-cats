@@ -1,8 +1,8 @@
 import './App.css';
 import Form from './Form';
-import { BaseOpenTelemetryComponent } from '@opentelemetry/plugin-react-load';
+import React from 'react';
 
-class App extends BaseOpenTelemetryComponent {
+class App extends React.Component {
   render() {
     return (
     <div className="App">

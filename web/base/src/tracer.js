@@ -1,6 +1,5 @@
 import { ConsoleSpanExporter, SimpleSpanProcessor } from '@opentelemetry/tracing';
 import { WebTracerProvider } from '@opentelemetry/web';
-import { BaseOpenTelemetryComponent } from '@opentelemetry/plugin-react-load';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
@@ -23,16 +22,17 @@ export default (serviceName) => {
   provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
 
   const tracer = provider.getTracer(serviceName);
-  BaseOpenTelemetryComponent.setTracer(tracer);
-
+  
   registerInstrumentations({
     instrumentations: [
       new FetchInstrumentation({
-        propagateTraceHeaderCorsUrls: 'http://localhost:8080/getActivity'
+        propagateTraceHeaderCorsUrls: ['http://localhost:8080', 'http://localhost:8080/getActivity'],
+        clearTimingResources: true
       }),
     ],
     tracerProvider: provider
   })
   
+  console.log(propagation.fields())
   return tracer;
 }

@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { BaseOpenTelemetryComponent } from '@opentelemetry/plugin-react-load'
-import { context, getSpan, setSpan } from '@opentelemetry/api';
-import Tracer from './tracer.js'
+import { context, getSpan, setSpan, trace } from '@opentelemetry/api';
 
-const tracer = Tracer('web')
+const tracer = trace.getTracer('web')
 
-class Form extends BaseOpenTelemetryComponent {
+class Form extends React.Component {
   constructor(props){
     super(props)
     this.state = {
