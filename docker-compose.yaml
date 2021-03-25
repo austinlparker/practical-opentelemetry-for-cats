@@ -21,13 +21,8 @@ services:
       - collector
   
   web:
-    build: ./web/base
+    build: ./web/final
     ports:
       - 3000:80
-    environment:
-      - IS_DOCKER=true
-      - SERVER_HOSTNAME=go
-      - SERVER_PORT=8080
-      - COLLECTOR_ENDPOINT=collector:4317
     depends_on:
       - collector

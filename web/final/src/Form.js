@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { context, getSpan, setSpan, trace } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('web')
 
 class Form extends React.Component {
   constructor(props){
@@ -14,10 +17,12 @@ class Form extends React.Component {
 
   getActivity(event) {
     event.preventDefault()
-    const req = new Request(`http://localhost:8080/getActivity?type=${this.state.option}`, {method:'POST'})
-    fetch(req)
-      .then(res => res.text())
-      .then(text => this.setResults(JSON.parse(text)))
+    const getActivitySpan = tracer.startSpan('fetchActivity')
+    context.with(setSpan(context.active(), getActivitySpan), () => {
+      const req = new Request(`http://localhost:8080/getActivity?type=${this.state.option}`, {method:'POST'})
+      fetch(req).then(res => res.text()).then(text => this.setResults(JSON.parse(text))).then(() => getActivitySpan.end())
+    })
+    
   }
 
   setOption(event) {

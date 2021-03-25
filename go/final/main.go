@@ -8,9 +8,7 @@ import (
 	"net/http"
 	"net/http/httptrace"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/tpkeeper/gin-dump"
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
@@ -35,15 +33,31 @@ func main() {
 	ctx := context.Background()
 	InitOpenTelemetry(ctx)
 	router := gin.New()
-	router.Use(gindump.Dump())
+	router.Use(CORSMiddleware())
 	router.Use(otelgin.Middleware("go-server"))
-	router.Use(cors.Default())
+
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "hello world!")
 	})
 	router.POST("/getActivity", handleForm)
 
 	router.Run()
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "traceparent, baggage, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }
 
 func handleForm(c *gin.Context) {

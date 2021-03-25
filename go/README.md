@@ -18,7 +18,7 @@ The application itself is an HTTP server that uses the Gin framework for routing
 
 OpenTelemetry contains quite a few individual packages and libraries that you'll need to import. There's a rationale for this behavior, though - the SDK is designed to be composable (as in, you can re-implement various parts of it and mix them together) in order to support integration with a variety of other pre-existing telemetry libraries. In addition, OpenTelemetry can be thought of as a 'low level' API and SDK. This leads to an "explicit, not implicit" design philosophy -- we want to make sure that end users and integrators alike are able to narrowly scope what's imported into their code.
 
-With that in mind, let's talk about installation. In Go, OpenTelemetry is published as a collection of modules in the `go.opentelemetry.io/otel` namespace. In order to keep our business logic relatively clean, we're going to create a separate file that contains our OpenTelemetry setup and configuration code (like [this](01/otel.go)). Next, we need to import the basic requirements for using OpenTelemetry -
+With that in mind, let's talk about installation. In Go, OpenTelemetry is published as a collection of modules in the `go.opentelemetry.io/otel` namespace. In order to keep our business logic relatively clean, we're going to create a separate file that contains our OpenTelemetry setup and configuration code (like [this](final/otel.go)). Next, we need to import the basic requirements for using OpenTelemetry -
 
 * Providers, which is the object that manages the telemetry pipeline for a specific type of telemetry (either metrics or traces).
 * Exporters, which define a sink for the telemetry data (such as `stdout`, a file, or a network endpoint).
