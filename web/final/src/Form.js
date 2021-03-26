@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { context, getSpan, setSpan, trace } from '@opentelemetry/api';
+import React from 'react';
+import { context, setSpan, SpanStatusCode, trace } from '@opentelemetry/api';
 
 const tracer = trace.getTracer('web')
 
@@ -20,9 +20,15 @@ class Form extends React.Component {
     const getActivitySpan = tracer.startSpan('fetchActivity')
     context.with(setSpan(context.active(), getActivitySpan), () => {
       const req = new Request(`http://localhost:8080/getActivity?type=${this.state.option}`, {method:'POST'})
-      fetch(req).then(res => res.text()).then(text => this.setResults(JSON.parse(text))).then(() => getActivitySpan.end())
+      fetch(req)
+        .then(res => res.text())
+        .then(text => this.setResults(JSON.parse(text)))
+        .catch(err => {
+          getActivitySpan.setStatus(SpanStatusCode.ERROR)
+          getActivitySpan.addEvent(err.message)
+        })
+        .finally(() => getActivitySpan.end())
     })
-    
   }
 
   setOption(event) {
