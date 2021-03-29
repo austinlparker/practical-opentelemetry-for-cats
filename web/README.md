@@ -237,4 +237,81 @@ Let's see if it works. Save, then run the application with `yarn start`, and ope
 }
 ```
 
-Congratulations! OpenTelemetry is now generating traces. Let's send them somewhere, then talk about how to make them more useful.
+There's a few things we still need to do in order to make this more useful, however, so stick around and let's make this data more useful.
+
+## Exporting To The Collector
+
+The OpenTelemetry Collector is a lightweight telemetry collection and translation server. It can be deployed alongside your application in a variety of ways, depending on how you deploy your application. Running on a VM? Run the collector as a daemon service on each machine. Kubernetes? You can run it as a DaemonSet, Sidecar, or standalone Deployment. Collectors have three main benefits:
+
+* Separation of concerns between instrumentation and collection
+* Modify telemetry (filters, sampling) without changing application code
+* Transform and export telemetry to different backend services
+
+While you can export your traces directly from a process to a backend system that supports OpenTelemetry (like Jaeger, Zipkin, or a plethora of vendors), using a collector instance as a tracing proxy allows for greater flexibility and control. In addition, collectors can be used as log and metric processors, giving you a 'swiss army knife' for collecting telemetry signals from your application, reducing tool sprawl. 
+
+Exporting from a web client adds several wrinkles to the telemetry collection process, which are covered in more detail [here](../collector/README.md). The way you export data to the collector, however, is broadly similar regardless of how the collector is deployed. 
+
+In this example, since we're running everything locally, we'll export to the same collector that's receiving data from our back-end service. In `tracer.js`, import and then create a new collector exporter:
+
+```javascript
+// add the following imports
+import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
+import { BatchSpanProcessor } from '@opentelemetry/tracing';
+
+export default (serviceName) => {
+  // after provider creation
+  const exporter = new CollectorTraceExporter({
+    url: 'http://localhost:55681/v1/trace',
+    serviceName: serviceName
+  });
+  provider.addSpanProcessor(new BatchSpanProcessor(exporter))
+  // continue to register instrumentation, etc.
+}
+```
+
+This configuration will batch and forward all spans to a collector in addition to the console. For more information on configuring a collector, [see this document](../collector/README.md).
+
+## Span Enrichment
+
+Often, you'll want to add more data to a span that already exists, or create children of that span to capture the work being done by business logic in your application. This process can be referred to as 'enrichment' of the telemetry created by automatic instrumentation.
+
+Broadly, enrichment covers two main use cases:
+
+* Explicit creation of new spans in order to better model the work being performed under a request
+* Adding events or attributes to an existing span that aren't added by automatic instrumentation
+
+Enriching web-based client spans can be a challenge. Generally, web frameworks aren't terribly well supported for instrumentation at this point in time (by 'web frameworks' I mean client-side JS frameworks such as React, Angular, etc.), but this will improve in time I'm sure. What does this mean in practice? Possibly not that much - automatic instrumentation will give you spans for things like component load times, component dismount, and so forth - which may not be especially helpful out of the box. That said, it's generally very useful to instrument API calls and other XHR calls in order to measure latency from the end-users perspective. Automatic instrumentation can handle creating the outgoing spans for this, but it can be helpful to wrap these calls in parent spans that map to a user action (like 'clicking a button')
+
+To add instrumentation, first, you need to import the OpenTelemetry API and get a tracer instance. In `Form.js` -
+
+```javascript
+import { context, setSpan, SpanStatusCode, trace } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('web')
+
+class Form extends React.Component {
+  ...
+}
+```
+
+In this case, we're re-using the same name that we used in `index.js` in order to get the same tracer instance that we're using for our automatic instrumentation. Then, in `getActivity`, we can add a parent span that wraps our outgoing fetch call.
+
+```javascript
+getActivity(event) {
+  event.preventDefault()
+  const getActivitySpan = tracer.startSpan('fetchActivity')
+  context.with(setSpan(context.active(), getActivitySpan), () => {
+    const req = new Request(`http://localhost:8080/getActivity?type=${this.state.option}`, {method:'POST'})
+    fetch(req)
+      .then(res => res.text())
+      .then(text => this.setResults(JSON.parse(text)))
+      .catch(err => {
+        getActivitySpan.setStatus(SpanStatusCode.ERROR)
+        getActivitySpan.addEvent(err.message)
+      })
+      .finally(() => getActivitySpan.end())
+  })
+}
+```
+
+The `context.with` call here is important, as it ensures that the span created for the fetch request is a child of the span created for the click. You could use this parent to add more detail about work being done as part of processing user input, for example.

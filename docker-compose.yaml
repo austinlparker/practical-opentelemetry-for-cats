@@ -8,7 +8,7 @@ services:
       - 55681:55681
     command: ["--config=/etc/collector-config.yaml"]
     volumes:
-      - ./collector.yaml:/etc/collector-config.yaml
+      - ./collector/collector-local.yaml:/etc/collector-config.yaml
   
   go:
     build: ./go/final
